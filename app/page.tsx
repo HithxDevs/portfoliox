@@ -254,7 +254,7 @@ const ProfessionalPortfolio = () => {
                 >
                   {/* Avatar placeholder */}
                   <div className="w-72 h-72 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-6xl font-bold">
-                    JA
+                    HD
                   </div>
                 </motion.div>
               </div>
