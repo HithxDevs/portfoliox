@@ -215,6 +215,12 @@ const ProfessionalPortfolio = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    window.open(
+                      'https://drive.google.com/file/d/1v7NILE8qWdu5BGPdD_6h7TrDVyM2erWN/view?usp=drive_link',
+                      '_blank'
+                    );
+                  }}
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                 >
                   Download CV
