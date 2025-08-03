@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Code, Download, Sparkles } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
@@ -40,10 +40,8 @@ const Earth = ({ isDarkMode }: { isDarkMode: boolean }) => {
   
   useFrame(({ clock, mouse }) => {
     if (earthRef.current && groupRef.current) {
-      // Subtle auto-rotation
       earthRef.current.rotation.y = clock.getElapsedTime() * 0.1;
       
-      // Gentle parallax effect based on mouse position
       groupRef.current.position.x = THREE.MathUtils.lerp(
         groupRef.current.position.x,
         mouse.x * 0.5,
@@ -90,13 +88,26 @@ export default function HeroSection({ isDarkMode = true }: { isDarkMode?: boolea
   const [isTyping, setIsTyping] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
+  const cursorScale = useTransform(cursorX, [0, window.innerWidth], [0.9, 1.1]);
+  const cursorOpacity = useTransform(cursorY, [0, window.innerHeight], [0.8, 1]);
+
   const roles = ["DEVELOPER", "DESIGNER", "PROBLEM SOLVER"];
   const rolesColors = ["text-blue-500", "text-indigo-500", "text-cyan-500"];
 
   useEffect(() => {
     setMounted(true);
     setTheme(isDarkMode ? darkTheme : lightTheme);
-  }, [isDarkMode]);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      cursorX.set(e.clientX - 8); // Adjust for cursor size
+      cursorY.set(e.clientY - 8);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [isDarkMode, cursorX, cursorY]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -202,9 +213,8 @@ export default function HeroSection({ isDarkMode = true }: { isDarkMode?: boolea
                 >
                   <span className="block">Hi, I'm</span>
                   <span className="block bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
-                    Harshith <span className="text-white">Daraboina</span>
+                    Harshith
                   </span>
-                  
                 </motion.h1>
                 
                 {/* Animated Role */}
@@ -287,17 +297,17 @@ export default function HeroSection({ isDarkMode = true }: { isDarkMode?: boolea
         </div>
       </section>
 
-      {/* Subtle Cursor Follower */}
+      {/* Cursor Follower */}
       <motion.div
         className="fixed w-4 h-4 rounded-full bg-blue-500/20 pointer-events-none z-20 mix-blend-exclusion"
         style={{
-          left: 0,
-          top: 0,
+          x: cursorX,
+          y: cursorY,
+          scale: cursorScale,
+          opacity: cursorOpacity
         }}
         animate={{
-          x: containerRef.current ? (event?.clientX - containerRef.current.offsetLeft - 8) || 0 : 0,
-          y: containerRef.current ? (event?.clientY - containerRef.current.offsetTop - 8) || 0 : 0,
-          scale: [1, 1.5, 1],
+          scale: [1, 1.2, 1],
           opacity: [0.8, 1, 0.8]
         }}
         transition={{
