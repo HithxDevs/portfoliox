@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import { Home, User, Briefcase, Code, Mail, Github, Linkedin, Phone, MapPin, Download, ExternalLink, Menu, X } from 'lucide-react';
+import HeroSection from '@/components/herosection';
 
 // import profilePhoto from '/assets/hero.png';
 
@@ -163,7 +164,7 @@ const CreativePortfolio = () => {
             {isDarkMode ? '☀️' : '🌙'}
           </motion.button>
           
-          <h1 className={`text-xl font-bold ${theme.text}`}>H. Daraboina</h1>
+          <h1 className={`text-xl font-bold ${theme.text}`}>Harshith Daraboina</h1>
           
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -281,170 +282,9 @@ const CreativePortfolio = () => {
 
       {/* Main Content */}
       <div className="md:ml-20 pt-16 md:pt-0" ref={containerRef}>
+        
         {/* Hero Section */}
-        <section id="home" className="min-h-screen flex items-center justify-center px-4 sm:px-8 py-20 relative overflow-hidden">
-          <div className="absolute inset-0 overflow-hidden opacity-20">
-            {[...Array(30)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute rounded-full bg-cyan-400"
-                style={{
-                  width: Math.random() * 10 + 5 + 'px',
-                  height: Math.random() * 10 + 5 + 'px',
-                  left: Math.random() * 100 + '%',
-                  top: Math.random() * 100 + '%',
-                }}
-                animate={{
-                  y: [0, (Math.random() - 0.5) * 100],
-                  x: [0, (Math.random() - 0.5) * 100],
-                  opacity: [0.2, 0.8, 0.2],
-                }}
-                transition={{
-                  duration: Math.random() * 10 + 10,
-                  repeat: Infinity,
-                  repeatType: 'reverse',
-                }}
-              />
-            ))}
-          </div>
-
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center z-10">
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="space-y-6 order-2 lg:order-1"
-            >
-              <div>
-                <motion.span 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 rounded-full text-sm font-medium mb-6 border border-cyan-500/30"
-                >
-                  <span className="relative flex h-3 w-3 mr-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
-                  </span>
-                  Available for opportunities
-                </motion.span>
-                
-                <motion.h1 
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className={`text-4xl sm:text-5xl md:text-6xl font-bold ${theme.text} mb-6 leading-tight`}
-                >
-                  <span className="block">HARSHITH</span>
-                  <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                    DARABOINA
-                  </span>
-                </motion.h1>
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="space-y-2"
-                >
-                  <h2 className={`text-xl sm:text-2xl md:text-3xl ${theme.text} font-light`}>
-                    Full Stack Developer
-                  </h2>
-                  <h2 className={`text-xl sm:text-2xl md:text-3xl ${theme.textSecondary} font-light`}>
-                    <span className="text-cyan-400">+</span> Machine Learning Engineer
-                  </h2>
-                </motion.div>
-                
-                <motion.p 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className={`text-base sm:text-lg ${theme.textSecondary} leading-relaxed max-w-lg mt-4`}
-                >
-                  I build exceptional digital experiences with modern web technologies and AI solutions. Currently pursuing Computer Science at IIIT Dharwad.
-                </motion.p>
-              </div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="flex flex-wrap gap-4 mt-8"
-              >
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => scrollToSection('projects')}
-                  className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 flex items-center gap-2"
-                >
-                  <Code size={18} />
-                  View Projects
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => window.open('https://drive.google.com/file/d/1v7NILE8qWdu5BGPdD_6h7TrDVyM2erWN/view?usp=drive_link', '_blank')}
-                  className={`px-6 sm:px-8 py-3 sm:py-4 border-2 border-cyan-500 ${theme.text} rounded-lg font-medium hover:bg-cyan-500/10 transition-all duration-300 flex items-center gap-2`}
-                >
-                  <Download size={18} />
-                  Download CV
-                </motion.button>
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-                className="grid grid-cols-3 gap-4 sm:gap-6 pt-8"
-              >
-                {[
-                  { number: '8.02', label: 'CGPA' },
-                  { number: '10+', label: 'Projects' },
-                  { number: '400+', label: 'LeetCode' }
-                ].map((stat, index) => (
-                  <div key={index} className="text-center">
-                    <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                      {stat.number}
-                    </div>
-                    <div className={`text-xs sm:text-sm ${theme.textSecondary}`}>{stat.label}</div>
-                  </div>
-                ))}
-              </motion.div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="flex justify-center lg:justify-end order-1 lg:order-2"
-            >
-              <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 rounded-full border-2 border-dashed border-cyan-500/30"
-                />
-                <motion.div
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-4 rounded-full border border-blue-500/20"
-                />
-                
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="w-full h-full rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center overflow-hidden backdrop-blur-sm border border-cyan-500/30 shadow-xl"
-                >
-                  <img 
-                    src='/assets/hero.png' 
-                    alt="Harshith Daraboina" 
-                    className="w-full h-full object-cover rounded-full border-4 border-white/10"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 rounded-full" />
-                </motion.div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
+        <HeroSection isDarkMode={isDarkMode} />
 
         {/* About Section */}
         <section id="about" className={`py-16 sm:py-20 px-4 sm:px-8 ${theme.card}`}>
