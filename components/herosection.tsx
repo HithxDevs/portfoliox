@@ -1,10 +1,11 @@
 'use client';
 import { motion } from 'framer-motion';
 import { Code, Download } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, JSX } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stars, useGLTF } from '@react-three/drei';
+
 
 type Theme = {
   bg: string;
