@@ -1,126 +1,29 @@
-'use client';
-import { motion } from 'framer-motion';
-import { Code, Download } from 'lucide-react';
-import { useState, useEffect, useRef, JSX } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { OrbitControls, Stars, useGLTF } from '@react-three/drei';
 
-
-type Theme = {
-  bg: string;
-  text: string;
-  textSecondary: string;
-  accent: string;
-  border: string;
-  card: string;
-};
-
-const darkTheme: Theme = {
-  bg: 'bg-gray-950',
-  text: 'text-gray-100',
-  textSecondary: 'text-gray-400',
-  accent: 'bg-gradient-to-r from-blue-600 to-indigo-600',
-  border: 'border-gray-800',
-  card: 'bg-gray-900/80'
-};
-
-const lightTheme: Theme = {
-  bg: 'bg-gray-50',
-  text: 'text-gray-900',
-  textSecondary: 'text-gray-600',
-  accent: 'bg-gradient-to-r from-blue-500 to-indigo-600',
-  border: 'border-gray-200',
-  card: 'bg-white/80'
-};
-
-// Preload the UFO model
-useGLTF.preload('/models/ufo.glb');
-
-function UfoModel(props: JSX.IntrinsicElements['group']) {
-  const group = useRef<THREE.Group>(null);
-  const { scene } = useGLTF('/models/ufo.glb');
-  
-  // Apply transformations to the model
-  useEffect(() => {
-    scene.scale.set(0.5, 0.5, 0.5);
-    scene.position.set(0, 0, 0);
-    scene.rotation.set(0, 0, 0);
-    
-    // Enhance materials for better visibility
-    scene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        if (child.material instanceof THREE.MeshStandardMaterial) {
-          child.material.metalness = 0.7;
-          child.material.roughness = 0.3;
-          child.material.emissive = new THREE.Color(0x6366f1);
-          child.material.emissiveIntensity = 0.5;
-        }
-      }
-    });
-  }, [scene]);
-
-  useFrame(({ clock }) => {
-    if (group.current) {
-      const time = clock.getElapsedTime();
-      // Circular flying path
-      group.current.position.x = Math.sin(time * 0.5) * 5;
-      group.current.position.y = Math.cos(time * 0.5) * 2 + 2;
-      group.current.position.z = Math.cos(time * 0.5) * 3;
-      // Gentle rotation
-      group.current.rotation.y = time * 0.2;
-    }
-  });
-
-  return <primitive object={scene} ref={group} {...props} />;
-}
-
-const Earth = ({ isDarkMode }: { isDarkMode: boolean }) => {
-  const earthRef = useRef<THREE.Mesh>(null);
-  const earthMap = useLoader(THREE.TextureLoader, '/textures/earth/earthmap1k.jpg');
-  
-  useFrame(({ clock }) => {
-    if (earthRef.current) {
-      earthRef.current.rotation.y = clock.getElapsedTime() * 0.1;
-    }
-  });
-
-  return (
-    <mesh ref={earthRef}>
-      <sphereGeometry args={[1.8, 64, 64]} />
-      <meshStandardMaterial 
-        map={earthMap}
-        metalness={0.2}
-        roughness={0.7}
-        emissive={isDarkMode ? new THREE.Color(0x1e3a8a) : new THREE.Color(0x93c5fd)}
-        emissiveIntensity={0.1}
-      />
-    </mesh>
-  );
-};
-
-export default function HeroSection({ isDarkMode = true }: { isDarkMode?: boolean }) {
+export default function FlyingSaucerSolarSystem() {
   const [mounted, setMounted] = useState(false);
-  const [theme, setTheme] = useState<Theme>(lightTheme);
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
-  
+  const containerRef = useRef(null);
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
+  const earthGroupRef = useRef(null);
+  const scrollY = useRef(0);
+
   const roles = ["DEVELOPER", "DESIGNER", "PROBLEM SOLVER"];
-  const rolesColors = ["text-blue-500", "text-indigo-500", "text-cyan-500"];
 
   useEffect(() => {
     setMounted(true);
-    setTheme(isDarkMode ? darkTheme : lightTheme);
-  }, [isDarkMode]);
+  }, []);
 
   useEffect(() => {
     if (!mounted) return;
 
     const currentRole = roles[currentRoleIndex];
-    let timeout: NodeJS.Timeout;
+    let timeout;
 
     if (isTyping) {
       if (displayedText.length < currentRole.length) {
@@ -146,121 +49,269 @@ export default function HeroSection({ isDarkMode = true }: { isDarkMode?: boolea
     return () => clearTimeout(timeout);
   }, [displayedText, isTyping, currentRoleIndex, mounted]);
 
+  // Three.js Earth-Focused Solar System
+  useEffect(() => {
+    if (!mounted || !containerRef.current) return;
+
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    cameraRef.current = camera;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    rendererRef.current = renderer;
+    
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0xf8f8f8, 1);
+    containerRef.current.appendChild(renderer.domElement);
+    
+    // Create minimalist stars background
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 2000;
+    const starPositions = new Float32Array(starCount * 3);
+    
+    for (let i = 0; i < starCount; i++) {
+      const i3 = i * 3;
+      const radius = 100 + Math.random() * 900;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos((Math.random() * 2) - 1);
+      
+      starPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+      starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      starPositions[i3 + 2] = radius * Math.cos(phi);
+    }
+    
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    
+    const starMaterial = new THREE.PointsMaterial({
+      color: 0x1a1a1a,
+      size: 0.8,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.6
+    });
+    
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+    
+    // Create geometric sun
+    const sunGeometry = new THREE.SphereGeometry(6, 32, 32);
+    const sunMaterial = new THREE.MeshBasicMaterial({
+      color: 0x1a1a1a,
+      transparent: true,
+      opacity: 0.8
+    });
+    const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+    sun.position.set(60, 15, 60);
+    scene.add(sun);
+    
+    // Create earth group
+    const earthGroup = new THREE.Group();
+    earthGroupRef.current = earthGroup;
+    scene.add(earthGroup);
+    
+    // Create minimalist earth with geometric design
+    const earthGeometry = new THREE.SphereGeometry(2.5, 32, 32);
+    const earthMaterial = new THREE.MeshLambertMaterial({
+      color: 0x1a1a1a,
+      transparent: true,
+      opacity: 0.9
+    });
+    
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    earthGroup.add(earth);
+    
+    // Add geometric wireframe overlay
+    const earthWireframe = new THREE.Mesh(
+      earthGeometry,
+      new THREE.MeshBasicMaterial({
+        color: 0x666666,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.2
+      })
+    );
+    earthGroup.add(earthWireframe);
+    
+    // Create geometric moon
+    const moonGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+    const moonMaterial = new THREE.MeshLambertMaterial({
+      color: 0x999999,
+      transparent: true,
+      opacity: 0.8
+    });
+    const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    moon.position.set(6, 0, 0);
+    earthGroup.add(moon);
+    
+    // Create elegant moon orbit ring
+    const moonOrbitGeometry = new THREE.RingGeometry(5.8, 6.2, 64);
+    const moonOrbitMaterial = new THREE.MeshBasicMaterial({
+      color: 0x1a1a1a,
+      transparent: true,
+      opacity: 0.1,
+      side: THREE.DoubleSide
+    });
+    const moonOrbit = new THREE.Mesh(moonOrbitGeometry, moonOrbitMaterial);
+    moonOrbit.rotation.x = Math.PI / 2;
+    earthGroup.add(moonOrbit);
+    
+    // Add sophisticated lighting
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(50, 50, 50);
+    scene.add(directionalLight);
+    
+    // Initial camera position
+    camera.position.set(0, 2, 12);
+    camera.lookAt(0, 0, 0);
+    
+    // Handle scroll
+    const handleScroll = () => {
+      scrollY.current = window.scrollY;
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    
+    // Handle mouse movement
+    const handleMouseMove = (event) => {
+      if (earthGroup) {
+        earthGroup.rotation.y = (event.clientX / window.innerWidth - 0.5) * 0.3;
+        earthGroup.rotation.x = (event.clientY / window.innerHeight - 0.5) * 0.1;
+      }
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    // Animation loop
+    const clock = new THREE.Clock();
+    
+    const animate = () => {
+      requestAnimationFrame(animate);
+      
+      const elapsedTime = clock.getElapsedTime();
+      
+      // Rotate earth elegantly
+      if (earthGroup) {
+        earth.rotation.y += 0.003;
+        earthWireframe.rotation.y += 0.0025;
+        
+        // Moon orbit
+        moon.position.x = Math.cos(elapsedTime * 0.4) * 6;
+        moon.position.z = Math.sin(elapsedTime * 0.4) * 6;
+        moon.rotation.y += 0.002;
+      }
+      
+      // Smooth camera movement based on scroll
+      const scrollFactor = Math.min(scrollY.current * 0.0008, 1);
+      camera.position.z = 12 - scrollFactor * 18;
+      camera.position.y = 2 + scrollFactor * 8;
+      camera.position.x = scrollFactor * 5;
+      
+      camera.lookAt(0, scrollFactor * 3, 0);
+      
+      renderer.render(scene, camera);
+    };
+    
+    animate();
+    
+    // Handle resize
+    const handleResize = () => {
+      if (camera && renderer) {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+      
+      if (containerRef.current && renderer && containerRef.current.contains(renderer.domElement)) {
+        containerRef.current.removeChild(renderer.domElement);
+      }
+      
+      if (renderer) {
+        renderer.dispose();
+      }
+    };
+  }, [mounted]);
+
   if (!mounted) {
     return (
-      <div className={`min-h-[80vh] ${isDarkMode ? darkTheme.bg : lightTheme.bg}`}>
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-pulse">
-            <div className="h-12 w-64 bg-gray-700 rounded mb-4"></div>
-            <div className="h-6 w-48 bg-gray-600 rounded"></div>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-64 bg-gray-200 rounded"></div>
+          <div className="h-4 w-48 bg-gray-100 rounded"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <section 
-      id="hero"
-      className={`relative overflow-hidden min-h-[80vh] flex items-center ${theme.bg}`}
-    >
-      {/* Three.js Canvas - Background */}
-      <div className="absolute inset-0 z-0">
-        <Canvas
-          camera={{ position: [0, 0, 7], fov: 45 }}
-          gl={{ antialias: true }}
-          shadows
-        >
-          <ambientLight intensity={isDarkMode ? 0.5 : 0.8} />
-          <pointLight position={[10, 10, 10]} intensity={1.5} />
-          <directionalLight position={[-5, 5, 5]} intensity={0.8} />
-          <Earth isDarkMode={isDarkMode} />
-          <UfoModel />
-          {isDarkMode && (
-            <Stars 
-              radius={100} 
-              depth={50} 
-              count={3000} 
-              factor={4} 
-              saturation={0} 
-              fade 
-              speed={0.5} 
-            />
-          )}
-          <OrbitControls 
-            enableZoom={false}
-            autoRotate
-            autoRotateSpeed={0.3}
-            enablePan={false}
-            rotateSpeed={0.5}
-          />
-        </Canvas>
-      </div>
-
-      {/* Content Container */}
-      <div className="container mx-auto px-6 sm:px-12 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-2xl backdrop-blur-sm rounded-2xl p-8 lg:p-12"
-          style={{
-            backgroundColor: isDarkMode ? 'rgba(17, 24, 39, 0.7)' : 'rgba(255, 255, 255, 0.7)',
-            border: isDarkMode ? '1px solid rgba(31, 41, 55, 0.5)' : '1px solid rgba(229, 231, 235, 0.5)'
-          }}
-        >
-          <div className="space-y-6">
-            <motion.h1 
-              className={`text-4xl sm:text-5xl md:text-6xl font-bold ${theme.text} leading-tight`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <span className="block">Hi, I'm</span>
-              <span className="block bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
-                Harshith <span className={theme.text}>Daraboina</span>
-              </span>
-            </motion.h1>
-            
-            <div className="h-16 flex items-center">
-              <h2 className={`text-2xl sm:text-3xl font-medium ${rolesColors[currentRoleIndex]} font-mono`}>
-                {displayedText}
-                <span className="ml-1.5 animate-pulse">|</span>
-              </h2>
-            </div>
-
-            <motion.p
-              className={`${theme.textSecondary} text-lg`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              I craft digital experiences with clean code and thoughtful design.
-            </motion.p>
-
-            <motion.div 
-              className="flex flex-wrap gap-4 mt-8"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              <button
-                className={`px-6 py-3 ${theme.accent} text-white rounded-lg font-medium flex items-center gap-3 transition-colors hover:opacity-90`}
-              >
-                <Code size={18} />
-                <span>View Projects</span>
-              </button>
-              
-              <button
-                className={`px-6 py-3 border ${theme.border} ${theme.text} rounded-lg font-medium flex items-center gap-3 backdrop-blur-sm transition-colors hover:bg-gray-100/10`}
-              >
-                <Download size={18} />
-                <span>Download CV</span>
-              </button>
-            </motion.div>
+    <div className="relative min-h-screen overflow-hidden" style={{ backgroundColor: '#f8f8f8' }}>
+      {/* Three.js container */}
+      <div ref={containerRef} className="fixed inset-0 z-0" />
+      
+      {/* Header Navigation */}
+      <header className="relative z-20 flex justify-between items-center p-8">
+        <div className="flex items-center gap-4">
+          <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
+            <div className="w-4 h-4 bg-white rounded-full opacity-80"></div>
           </div>
-        </motion.div>
+          <span className="text-lg font-medium tracking-wider text-black">FLYING SAUCER</span>
+        </div>
+        
+        <nav className="hidden md:flex items-center gap-8 text-sm tracking-wide text-gray-600">
+          <a href="#" className="hover:text-black transition-colors">WORK</a>
+          <a href="#" className="hover:text-black transition-colors">ABOUT</a>
+          <a href="#" className="hover:text-black transition-colors">CONTACT</a>
+        </nav>
+      </header>
+      
+      {/* Main Content */}
+      <div className="relative z-10 pt-20 pb-40">
+        <div className="max-w-6xl mx-auto px-8">
+          {/* Hero Section */}
+          <div className="mb-32">
+            <div className="mb-8">
+              <p className="text-sm tracking-widest text-gray-500 mb-4">I BELIEVE THAT WHAT YOU WANT TO BECOME IN THE LIFE, IS WHAT ALL YOU NEED. </p>
+              <h1 className="text-6xl md:text-8xl font-light leading-tight text-black mb-8">
+                HARSHITH<br />
+                <span className="text-4xl md:text-6xl">DARABOINA</span>
+              </h1>
+            </div>
+            
+            <div className="flex items-center gap-8 mb-12">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-black rounded-full"></div>
+                <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+              </div>
+              <span className="text-sm tracking-wider text-gray-500">Know more about us →</span>
+            </div>
+          </div>
+
+        </div>
       </div>
-    </section>
+
+      {/* Bottom Instructions */}
+      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="bg-white px-6 py-3 rounded-full shadow-lg border border-gray-200">
+          <span className="text-xs tracking-wider text-gray-500">
+            SCROLL TO ORBIT • MOVE TO ROTATE
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }

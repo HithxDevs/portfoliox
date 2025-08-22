@@ -1,34 +1,282 @@
-'use client';import React, { useState, useRef, useEffect } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stars } from '@react-three/drei';
-import { Home, User, Briefcase, Code, Mail, Github, Linkedin, Phone, MapPin, Download, ExternalLink, Menu, X } from 'lucide-react';
-import HeroSection from '@/components/herosection';
-
-// import profilePhoto from '/assets/hero.png';
+'use client';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Home, User, Briefcase, Code, Mail, Github, Linkedin, Phone, MapPin, ExternalLink, Menu, X } from 'lucide-react';
+import * as THREE from 'three';
 
 const CreativePortfolio = () => {
+  const [mounted, setMounted] = useState(false);
+  const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTyping, setIsTyping] = useState(true);
   const [activeSection, setActiveSection] = useState('home');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  
   const containerRef = useRef(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
+  const earthGroupRef = useRef(null);
+  const scrollY = useRef(0);
+  
+  const roles = ["DEVELOPER", "DESIGNER", "PROBLEM SOLVER"];
 
   useEffect(() => {
-    setIsMounted(true);
-    const handleResize = () => {
-      if (window.innerWidth > 768) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    setMounted(true);
   }, []);
 
-  const { scrollYProgress } = useScroll({
-    target: isMounted ? containerRef : undefined,
-    offset: ['start', 'end']
-  });
+  useEffect(() => {
+    if (!mounted) return;
+
+    const currentRole = roles[currentRoleIndex];
+    let timeout;
+
+    if (isTyping) {
+      if (displayedText.length < currentRole.length) {
+        timeout = setTimeout(() => {
+          setDisplayedText(currentRole.slice(0, displayedText.length + 1));
+        }, 100);
+      } else {
+        timeout = setTimeout(() => {
+          setIsTyping(false);
+        }, 2000);
+      }
+    } else {
+      if (displayedText.length > 0) {
+        timeout = setTimeout(() => {
+          setDisplayedText(displayedText.slice(0, -1));
+        }, 50);
+      } else {
+        setCurrentRoleIndex((prev) => (prev + 1) % roles.length);
+        setIsTyping(true);
+      }
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayedText, isTyping, currentRoleIndex, mounted]);
+
+  // Handle scroll for section activation
+  useEffect(() => {
+    const handleScroll = () => {
+      scrollY.current = window.scrollY;
+      setScrollProgress(Math.min(scrollY.current / (document.body.scrollHeight - window.innerHeight), 1));
+      
+      // Section activation logic
+      const sections = ['home', 'about', 'experience', 'projects', 'contact'];
+      const scrollPosition = window.scrollY + 100;
+      
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element && scrollPosition >= element.offsetTop && 
+            scrollPosition < element.offsetTop + element.offsetHeight) {
+          setActiveSection(section);
+          break;
+        }
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Three.js Earth-Focused Solar System
+  useEffect(() => {
+    if (!mounted || !containerRef.current) return;
+
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    cameraRef.current = camera;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    rendererRef.current = renderer;
+    
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Make background slightly transparent to improve content visibility
+    renderer.setClearColor(isDarkMode ? 0x111111 : 0xf0f0f0, 0.7);
+    containerRef.current.appendChild(renderer.domElement);
+    
+    // Create minimalist stars background
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 2000;
+    const starPositions = new Float32Array(starCount * 3);
+    
+    for (let i = 0; i < starCount; i++) {
+      const i3 = i * 3;
+      const radius = 100 + Math.random() * 900;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos((Math.random() * 2) - 1);
+      
+      starPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+      starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      starPositions[i3 + 2] = radius * Math.cos(phi);
+    }
+    
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    
+    const starMaterial = new THREE.PointsMaterial({
+      color: isDarkMode ? 0xffffff : 0x1a1a1a,
+      size: 0.8,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.6
+    });
+    
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+    
+    // Create geometric sun
+    const sunGeometry = new THREE.SphereGeometry(6, 32, 32);
+    const sunMaterial = new THREE.MeshBasicMaterial({
+      color: isDarkMode ? 0xffffff : 0x1a1a1a,
+      transparent: true,
+      opacity: 0.8
+    });
+    const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+    sun.position.set(60, 15, 60);
+    scene.add(sun);
+    
+    // Create earth group
+    const earthGroup = new THREE.Group();
+    earthGroupRef.current = earthGroup;
+    scene.add(earthGroup);
+    
+    // Create minimalist earth with geometric design
+    const earthGeometry = new THREE.SphereGeometry(2.5, 32, 32);
+    const earthMaterial = new THREE.MeshLambertMaterial({
+      color: isDarkMode ? 0xffffff : 0x1a1a1a,
+      transparent: true,
+      opacity: 0.9
+    });
+    
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    earthGroup.add(earth);
+    
+    // Add geometric wireframe overlay
+    const earthWireframe = new THREE.Mesh(
+      earthGeometry,
+      new THREE.MeshBasicMaterial({
+        color: isDarkMode ? 0xcccccc : 0x666666,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.2
+      })
+    );
+    earthGroup.add(earthWireframe);
+    
+    // Create geometric moon
+    const moonGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+    const moonMaterial = new THREE.MeshLambertMaterial({
+      color: isDarkMode ? 0xdddddd : 0x999999,
+      transparent: true,
+      opacity: 0.8
+    });
+    const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    moon.position.set(6, 0, 0);
+    earthGroup.add(moon);
+    
+    // Create elegant moon orbit ring
+    const moonOrbitGeometry = new THREE.RingGeometry(5.8, 6.2, 64);
+    const moonOrbitMaterial = new THREE.MeshBasicMaterial({
+      color: isDarkMode ? 0xffffff : 0x1a1a1a,
+      transparent: true,
+      opacity: 0.1,
+      side: THREE.DoubleSide
+    });
+    const moonOrbit = new THREE.Mesh(moonOrbitGeometry, moonOrbitMaterial);
+    moonOrbit.rotation.x = Math.PI / 2;
+    earthGroup.add(moonOrbit);
+    
+    // Add sophisticated lighting
+    const ambientLight = new THREE.AmbientLight(isDarkMode ? 0x404040 : 0x808080, 0.6);
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(isDarkMode ? 0xffffff : 0x555555, 0.8);
+    directionalLight.position.set(50, 50, 50);
+    scene.add(directionalLight);
+    
+    // Initial camera position
+    camera.position.set(0, 2, 12);
+    camera.lookAt(0, 0, 0);
+    
+    // Handle scroll
+    const handleScroll = () => {
+      scrollY.current = window.scrollY;
+      setScrollProgress(Math.min(scrollY.current / (document.body.scrollHeight - window.innerHeight), 1));
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    
+    // Handle mouse movement
+    const handleMouseMove = (event) => {
+      if (earthGroup) {
+        earthGroup.rotation.y = (event.clientX / window.innerWidth - 0.5) * 0.3;
+        earthGroup.rotation.x = (event.clientY / window.innerHeight - 0.5) * 0.1;
+      }
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    // Animation loop
+    const clock = new THREE.Clock();
+    
+    const animate = () => {
+      requestAnimationFrame(animate);
+      
+      const elapsedTime = clock.getElapsedTime();
+      
+      // Rotate earth elegantly
+      if (earthGroup) {
+        earth.rotation.y += 0.003;
+        earthWireframe.rotation.y += 0.0025;
+        
+        // Moon orbit
+        moon.position.x = Math.cos(elapsedTime * 0.4) * 6;
+        moon.position.z = Math.sin(elapsedTime * 0.4) * 6;
+        moon.rotation.y += 0.002;
+      }
+      
+      // Smooth camera movement based on scroll
+      const scrollFactor = Math.min(scrollY.current * 0.0008, 1);
+      camera.position.z = 12 - scrollFactor * 18;
+      camera.position.y = 2 + scrollFactor * 8;
+      camera.position.x = scrollFactor * 5;
+      
+      camera.lookAt(0, scrollFactor * 3, 0);
+      
+      renderer.render(scene, camera);
+    };
+    
+    animate();
+    
+    // Handle resize
+    const handleResize = () => {
+      if (camera && renderer) {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+      
+      if (containerRef.current && renderer && containerRef.current.contains(renderer.domElement)) {
+        containerRef.current.removeChild(renderer.domElement);
+      }
+      
+      if (renderer) {
+        renderer.dispose();
+      }
+    };
+  }, [mounted, isDarkMode]);
 
   const navItems = [
     { id: 'home', icon: Home, label: 'Home' },
@@ -150,8 +398,22 @@ const CreativePortfolio = () => {
     accent: 'bg-gradient-to-r from-blue-600 to-purple-600'
   };
 
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-64 bg-gray-200 rounded"></div>
+          <div className="h-4 w-48 bg-gray-100 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${theme.bg}`}>
+    <div className={`relative min-h-screen overflow-hidden ${theme.bg}`}>
+      {/* Three.js container */}
+      <div ref={containerRef} className="fixed inset-0 z-0" />
+      
       {/* Mobile Header */}
       <header className={`md:hidden fixed top-0 left-0 right-0 z-50 ${theme.card} backdrop-blur-md border-b ${theme.border}`}>
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -281,10 +543,100 @@ const CreativePortfolio = () => {
       </motion.nav>
 
       {/* Main Content */}
-      <div className="md:ml-20 pt-16 md:pt-0" ref={containerRef}>
-        
+      <div className="md:ml-20 pt-16 md:pt-0 relative z-10">
         {/* Hero Section */}
-        <HeroSection isDarkMode={isDarkMode} />
+        <section id="home" className="relative z-10 pt-20 pb-40">
+          <div className="max-w-6xl mx-auto px-8">
+            <div className="mb-32">
+              <div className="mb-8">
+                <p className={`text-sm tracking-widest ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-4`}>I BELIEVE THAT WHAT YOU WANT TO BECOME IN THE LIFE, IS WHAT ALL YOU NEED. </p>
+                <h1 className={`text-6xl md:text-8xl font-light leading-tight ${theme.text} mb-8`}>
+                  HARSHITH<br />
+                  <span className="text-4xl md:text-6xl">DARABOINA</span>
+                </h1>
+              </div>
+              
+              <div className="flex items-center gap-8 mb-12">
+                <div className="flex items-center gap-2">
+                  <div className={`w-3 h-3 ${isDarkMode ? 'bg-white' : 'bg-black'} rounded-full`}></div>
+                  <div className={`w-3 h-3 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+                  <div className={`w-3 h-3 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+                  <div className={`w-3 h-3 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+                  <div className={`w-3 h-3 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+                </div>
+                <span className={`text-sm tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Know more about us →</span>
+              </div>
+            </div>
+
+            {/* Developer Identity Section */}
+            {/* <div className={`${theme.card} rounded-3xl p-12 shadow-sm border ${theme.border} mb-32`}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                  <span className={`text-xs tracking-widest ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} uppercase`}>Spotlight</span>
+                  <h2 className={`text-4xl md:text-5xl font-light mt-4 mb-6 ${theme.text}`}>
+                    Harshith Daraboina
+                  </h2>
+                  
+                  <div className="mb-8">
+                    <div className={`text-2xl font-mono tracking-wider ${theme.text}`}>
+                      {displayedText}
+                      <span className="animate-pulse ml-1">|</span>
+                    </div>
+                  </div>
+
+                  <p className={`${theme.textSecondary} text-lg leading-relaxed mb-8`}>
+                    I create immersive digital experiences with cutting-edge WebGL 
+                    and interactive design that moves culture forward.
+                  </p>
+
+                  <div className="flex items-center gap-4">
+                    <span className={`text-sm tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Category</span>
+                    <span className={theme.textSecondary}>/</span>
+                    <span className={`text-sm ${theme.text}`}>Web Development</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 mt-2">
+                    <span className={`text-sm tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Company</span>
+                    <span className={theme.textSecondary}>/</span>
+                    <span className={`text-sm ${theme.text}`}>Independent</span>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="w-80 h-80 mx-auto relative">
+                    <div className={`absolute inset-0 bg-gradient-to-br ${isDarkMode ? 'from-purple-900/30 to-blue-900/30' : 'from-pink-100 to-orange-100'} rounded-full opacity-60`}></div>
+                    <div className={`absolute inset-8 ${isDarkMode ? 'bg-white/10' : 'bg-black/20'} rounded-full`}></div>
+                    <div className={`absolute inset-16 ${theme.card} rounded-full shadow-inner flex items-center justify-center`}>
+                      <div className="text-4xl">🌍</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> */}
+
+            {/* Skills Grid */}
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-32">
+              {[
+                { title: "Frontend Development", desc: "React, Next.js, Three.js" },
+                { title: "UI/UX Design", desc: "Figma, User Experience" },
+                { title: "3D Graphics", desc: "WebGL, Interactive 3D" },
+                { title: "Problem Solving", desc: "Algorithmic Thinking" }
+              ].map((skill, index) => (
+                <motion.div 
+                  key={index} 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`${theme.card} p-8 rounded-2xl border ${theme.border} hover:shadow-lg transition-shadow`}
+                >
+                  <h3 className={`text-lg font-medium ${theme.text} mb-3`}>{skill.title}</h3>
+                  <p className={`${theme.textSecondary} text-sm leading-relaxed`}>{skill.desc}</p>
+                </motion.div>
+              ))}
+            </div> */}
+          </div>
+        </section>
 
         {/* About Section */}
         <section id="about" className={`py-16 sm:py-20 px-4 sm:px-8 ${theme.card}`}>
@@ -674,6 +1026,15 @@ const CreativePortfolio = () => {
             </div>
           </div>
         </footer>
+      </div>
+
+      {/* Bottom Instructions */}
+      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div className={`px-6 py-3 rounded-full shadow-lg border ${theme.border} ${theme.card}`}>
+          <span className={`text-xs tracking-wider ${theme.textSecondary}`}>
+            SCROLL TO ORBIT • MOVE TO ROTATE
+          </span>
+        </div>
       </div>
     </div>
   );
