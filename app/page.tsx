@@ -14,12 +14,13 @@ const CreativePortfolio = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   
-  const containerRef = useRef(null);
-  const sceneRef = useRef(null);
-  const cameraRef = useRef(null);
-  const rendererRef = useRef(null);
-  const earthGroupRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const earthGroupRef = useRef<THREE.Group | null>(null);
   const scrollY = useRef(0);
+  const animationFrameRef = useRef<number | null>(null);
   
   const roles = ["DEVELOPER", "DESIGNER", "PROBLEM SOLVER"];
 
@@ -27,11 +28,12 @@ const CreativePortfolio = () => {
     setMounted(true);
   }, []);
 
+  // Fixed typing effect with proper cleanup
   useEffect(() => {
     if (!mounted) return;
 
     const currentRole = roles[currentRoleIndex];
-    let timeout: NodeJS.Timeout | null = null;
+    let timeout: NodeJS.Timeout | undefined;
 
     if (isTyping) {
       if (displayedText.length < currentRole.length) {
@@ -55,17 +57,18 @@ const CreativePortfolio = () => {
     }
 
     return () => {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-};
-  }, [displayedText, isTyping, currentRoleIndex, mounted]);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [displayedText, isTyping, currentRoleIndex, mounted, roles]);
 
   // Handle scroll for section activation
   useEffect(() => {
     const handleScroll = () => {
       scrollY.current = window.scrollY;
-      setScrollProgress(Math.min(scrollY.current / (document.body.scrollHeight - window.innerHeight), 1));
+      const documentHeight = document.body.scrollHeight - window.innerHeight;
+      setScrollProgress(documentHeight > 0 ? Math.min(scrollY.current / documentHeight, 1) : 0);
       
       // Section activation logic
       const sections = ['home', 'about', 'experience', 'projects', 'contact'];
@@ -81,13 +84,15 @@ const CreativePortfolio = () => {
       }
     };
     
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
   }, []);
 
   // Three.js Earth-Focused Solar System
   useEffect(() => {
-    if (!mounted || !containerRef.current) return;
+    if (!mounted || !containerRef.current || typeof window === 'undefined') return;
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
@@ -98,7 +103,6 @@ const CreativePortfolio = () => {
     
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    // Make background slightly transparent to improve content visibility
     renderer.setClearColor(isDarkMode ? 0x111111 : 0xf0f0f0, 0.7);
     containerRef.current.appendChild(renderer.domElement);
     
@@ -205,16 +209,8 @@ const CreativePortfolio = () => {
     camera.position.set(0, 2, 12);
     camera.lookAt(0, 0, 0);
     
-    // Handle scroll
-    const handleScroll = () => {
-      scrollY.current = window.scrollY;
-      setScrollProgress(Math.min(scrollY.current / (document.body.scrollHeight - window.innerHeight), 1));
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    
     // Handle mouse movement
-    const handleMouseMove = (event) => {
+    const handleMouseMove = (event: MouseEvent) => {
       if (earthGroup) {
         earthGroup.rotation.y = (event.clientX / window.innerWidth - 0.5) * 0.3;
         earthGroup.rotation.x = (event.clientY / window.innerHeight - 0.5) * 0.1;
@@ -227,7 +223,7 @@ const CreativePortfolio = () => {
     const clock = new THREE.Clock();
     
     const animate = () => {
-      requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animate);
       
       const elapsedTime = clock.getElapsedTime();
       
@@ -268,9 +264,12 @@ const CreativePortfolio = () => {
     
     // Cleanup
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
+      
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       
       if (containerRef.current && renderer && containerRef.current.contains(renderer.domElement)) {
         containerRef.current.removeChild(renderer.domElement);
@@ -278,6 +277,20 @@ const CreativePortfolio = () => {
       
       if (renderer) {
         renderer.dispose();
+      }
+      
+      // Dispose geometries and materials
+      if (scene) {
+        scene.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.geometry?.dispose();
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
+            } else {
+              object.material?.dispose();
+            }
+          }
+        });
       }
     };
   }, [mounted, isDarkMode]);
@@ -359,24 +372,6 @@ const CreativePortfolio = () => {
     }
   ];
 
-  const achievements = [
-    {
-      title: 'Hack to Impact 2024',
-      description: 'Top 6 among 500+ teams at national hackathon',
-      icon: '🏆'
-    },
-    {
-      title: 'Competitive Programming',
-      description: 'CodeChef 3-star (1253), LeetCode 400+',
-      icon: '💻'
-    },
-    {
-      title: 'Academic Excellence',
-      description: '8.02 CGPA with consistent performance',
-      icon: '🎓'
-    }
-  ];
-
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
     setIsMobileMenuOpen(false);
@@ -400,6 +395,13 @@ const CreativePortfolio = () => {
     card: 'bg-gray-50',
     border: 'border-gray-200',
     accent: 'bg-gradient-to-r from-blue-600 to-purple-600'
+  };
+
+  // Handle form submission
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Add your form handling logic here
+    console.log('Form submitted');
   };
 
   if (!mounted) {
@@ -426,6 +428,7 @@ const CreativePortfolio = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className={`p-2 rounded-full ${theme.accent} text-white`}
+            aria-label="Toggle theme"
           >
             {isDarkMode ? '☀️' : '🌙'}
           </motion.button>
@@ -435,6 +438,7 @@ const CreativePortfolio = () => {
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className={`p-2 rounded-md ${theme.text}`}
+            aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -487,6 +491,7 @@ const CreativePortfolio = () => {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           className={`absolute top-6 p-3 rounded-full ${theme.accent} text-white`}
+          aria-label="Toggle theme"
         >
           {isDarkMode ? '☀️' : '🌙'}
         </motion.button>
@@ -570,75 +575,15 @@ const CreativePortfolio = () => {
                 </div>
                 <span className={`text-sm tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Know more about us →</span>
               </div>
-            </div>
 
-            {/* Developer Identity Section */}
-            {/* <div className={`${theme.card} rounded-3xl p-12 shadow-sm border ${theme.border} mb-32`}>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                  <span className={`text-xs tracking-widest ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} uppercase`}>Spotlight</span>
-                  <h2 className={`text-4xl md:text-5xl font-light mt-4 mb-6 ${theme.text}`}>
-                    Harshith Daraboina
-                  </h2>
-                  
-                  <div className="mb-8">
-                    <div className={`text-2xl font-mono tracking-wider ${theme.text}`}>
-                      {displayedText}
-                      <span className="animate-pulse ml-1">|</span>
-                    </div>
-                  </div>
-
-                  <p className={`${theme.textSecondary} text-lg leading-relaxed mb-8`}>
-                    I create immersive digital experiences with cutting-edge WebGL 
-                    and interactive design that moves culture forward.
-                  </p>
-
-                  <div className="flex items-center gap-4">
-                    <span className={`text-sm tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Category</span>
-                    <span className={theme.textSecondary}>/</span>
-                    <span className={`text-sm ${theme.text}`}>Web Development</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 mt-2">
-                    <span className={`text-sm tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Company</span>
-                    <span className={theme.textSecondary}>/</span>
-                    <span className={`text-sm ${theme.text}`}>Independent</span>
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <div className="w-80 h-80 mx-auto relative">
-                    <div className={`absolute inset-0 bg-gradient-to-br ${isDarkMode ? 'from-purple-900/30 to-blue-900/30' : 'from-pink-100 to-orange-100'} rounded-full opacity-60`}></div>
-                    <div className={`absolute inset-8 ${isDarkMode ? 'bg-white/10' : 'bg-black/20'} rounded-full`}></div>
-                    <div className={`absolute inset-16 ${theme.card} rounded-full shadow-inner flex items-center justify-center`}>
-                      <div className="text-4xl">🌍</div>
-                    </div>
-                  </div>
+              {/* Typing Effect Display */}
+              <div className="mb-8">
+                <div className={`text-2xl font-mono tracking-wider ${theme.text}`}>
+                  {displayedText}
+                  <span className="animate-pulse ml-1">|</span>
                 </div>
               </div>
-            </div> */}
-
-            {/* Skills Grid */}
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-32">
-              {[
-                { title: "Frontend Development", desc: "React, Next.js, Three.js" },
-                { title: "UI/UX Design", desc: "Figma, User Experience" },
-                { title: "3D Graphics", desc: "WebGL, Interactive 3D" },
-                { title: "Problem Solving", desc: "Algorithmic Thinking" }
-              ].map((skill, index) => (
-                <motion.div 
-                  key={index} 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`${theme.card} p-8 rounded-2xl border ${theme.border} hover:shadow-lg transition-shadow`}
-                >
-                  <h3 className={`text-lg font-medium ${theme.text} mb-3`}>{skill.title}</h3>
-                  <p className={`${theme.textSecondary} text-sm leading-relaxed`}>{skill.desc}</p>
-                </motion.div>
-              ))}
-            </div> */}
+            </div>
           </div>
         </section>
 
@@ -664,11 +609,13 @@ const CreativePortfolio = () => {
               >
                 <div className="relative">
                   <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl opacity-20 blur-lg"></div>
-                  <img 
+                  <div className="relative w-full h-96 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center">
+                    <img 
                     src='/assets/hero.png'  
                     alt="Harshith Daraboina" 
                     className="relative rounded-2xl w-full h-auto max-w-lg mx-auto border-4 border-white/10 shadow-xl"
                   />
+                  </div>
                 </div>
               </motion.div>
 
@@ -685,7 +632,7 @@ const CreativePortfolio = () => {
                   As a passionate Computer Science student at IIIT Dharwad, I specialize in building robust full-stack applications and intelligent machine learning solutions. With a strong foundation in modern web technologies and AI algorithms, I create products that are both technically sound and user-centric.
                 </p>
                 <p className={`${theme.textSecondary} leading-relaxed`}>
-                  My approach combines analytical problem-solving with creative design thinking, resulting in solutions that are not just functional but also delightful to use. I'm particularly interested in the intersection of AI and web technologies, where I can leverage both domains to build truly innovative products.
+                  My approach combines analytical problem-solving with creative design thinking, resulting in solutions that are not just functional but also delightful to use. I&apos;m particularly interested in the intersection of AI and web technologies, where I can leverage both domains to build truly innovative products.
                 </p>
 
                 <div className="pt-6">
@@ -944,13 +891,14 @@ const CreativePortfolio = () => {
               >
                 <h3 className={`text-2xl font-bold ${theme.text} mb-6`}>Send Me a Message</h3>
                 
-                <form className="space-y-6">
+                <form onSubmit={handleFormSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="name" className={`block ${theme.text} mb-2`}>Name</label>
                       <input 
                         type="text" 
                         id="name" 
+                        required
                         className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                         placeholder="Your name"
                       />
@@ -960,6 +908,7 @@ const CreativePortfolio = () => {
                       <input 
                         type="email" 
                         id="email" 
+                        required
                         className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                         placeholder="Your email"
                       />
@@ -971,6 +920,7 @@ const CreativePortfolio = () => {
                     <input 
                       type="text" 
                       id="subject" 
+                      required
                       className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                       placeholder="Subject"
                     />
@@ -981,6 +931,7 @@ const CreativePortfolio = () => {
                     <textarea 
                       id="message" 
                       rows={5}
+                      required
                       className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                       placeholder="Your message"
                     ></textarea>
