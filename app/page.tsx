@@ -54,7 +54,11 @@ const CreativePortfolio = () => {
       }
     }
 
-    return () => clearTimeout(timeout);
+    return () => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+};
   }, [displayedText, isTyping, currentRoleIndex, mounted]);
 
   // Handle scroll for section activation
