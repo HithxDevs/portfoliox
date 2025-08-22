@@ -31,7 +31,7 @@ const CreativePortfolio = () => {
     if (!mounted) return;
 
     const currentRole = roles[currentRoleIndex];
-    let timeout;
+    let timeout: NodeJS.Timeout | null = null;
 
     if (isTyping) {
       if (displayedText.length < currentRole.length) {
