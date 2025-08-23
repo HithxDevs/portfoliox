@@ -1,10 +1,11 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, User, Briefcase, Code, Mail, Github, Linkedin, Phone, MapPin, ExternalLink, Menu, X } from 'lucide-react';
+import { Home, User, Briefcase, Code, Mail, Github, Linkedin, Phone, MapPin, ExternalLink, Menu, X, FileText, Send } from 'lucide-react';
 import * as THREE from 'three';
+import emailjs from 'emailjs-com';
 
-const CreativePortfolio = () => {
+const ProfessionalPortfolio = () => {
   const [mounted, setMounted] = useState(false);
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -13,6 +14,8 @@ const CreativePortfolio = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState({ type: '', text: '' });
   
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -26,6 +29,8 @@ const CreativePortfolio = () => {
 
   useEffect(() => {
     setMounted(true);
+    // Initialize EmailJS with your public key
+    emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your actual EmailJS public key
   }, []);
 
   // Fixed typing effect with proper cleanup
@@ -86,6 +91,7 @@ const CreativePortfolio = () => {
     
     if (typeof window !== 'undefined') {
       window.addEventListener('scroll', handleScroll);
+      handleScroll(); // Initial call
       return () => window.removeEventListener('scroll', handleScroll);
     }
   }, []);
@@ -402,11 +408,31 @@ const CreativePortfolio = () => {
     accentBorder: 'border-black'
   };
 
-  // Handle form submission
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Handle form submission with EmailJS
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Add your form handling logic here
-    console.log('Form submitted');
+    setIsSubmitting(true);
+    setSubmitMessage({ type: '', text: '' });
+    
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    
+    try {
+      await emailjs.sendForm(
+        'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
+        'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
+        form,
+        'YOUR_PUBLIC_KEY' // Replace with your EmailJS public key
+      );
+      
+      setSubmitMessage({ type: 'success', text: 'Message sent successfully!' });
+      form.reset();
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      setSubmitMessage({ type: 'error', text: 'Failed to send message. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!mounted) {
@@ -484,80 +510,108 @@ const CreativePortfolio = () => {
         )}
       </AnimatePresence>
 
-      {/* Desktop Navigation */}
+      {/* Enhanced Desktop Navigation */}
       <motion.nav 
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className={`hidden md:flex fixed left-0 top-0 h-screen w-20 z-50 flex-col items-center justify-center ${theme.card} backdrop-blur-md border-r ${theme.border}`}
+        className={`hidden md:flex fixed left-0 top-0 h-screen w-24 z-50 flex-col items-center justify-between py-10 ${isDarkMode ? 'bg-gray-900/90' : 'bg-white/90'} backdrop-blur-md border-r ${theme.border}`}
       >
-        <motion.button
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className={`absolute top-6 p-3 rounded-full ${theme.accent}`}
-          aria-label="Toggle theme"
-        >
-          {isDarkMode ? '☀️' : '🌙'}
-        </motion.button>
-
-        <div className="flex flex-col items-center space-y-8">
-          {navItems.map((item, index) => {
-            const Icon = item.icon;
-            return (
-              <motion.button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.2, x: 10 }}
-                whileTap={{ scale: 0.9 }}
-                className={`relative p-3 rounded-full transition-all duration-300 group ${
-                  activeSection === item.id 
-                    ? `${theme.accent} ${theme.accentText} shadow-lg` 
-                    : `${theme.card} ${theme.text} hover:${theme.accent} hover:${theme.accentText}`
-                }`}
-              >
-                <Icon size={20} />
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  whileHover={{ opacity: 1, x: 0 }}
-                  className={`absolute left-16 top-1/2 transform -translate-y-1/2 px-3 py-1 ${theme.card} ${theme.text} rounded-lg text-sm whitespace-nowrap shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300`}
+        <div className="flex flex-col items-center space-y-10">
+          {/* Logo/Initials */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center shadow-lg"
+          >
+            <span className="text-white font-bold text-lg">HD</span>
+          </motion.div>
+          
+          {/* Navigation Items */}
+          <div className="flex flex-col items-center space-y-8">
+            {navItems.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <motion.button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`relative p-3 rounded-xl transition-all duration-300 group ${
+                    activeSection === item.id 
+                      ? `${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'} shadow-lg` 
+                      : `${isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-200'}`
+                  }`}
                 >
-                  {item.label}
-                </motion.div>
-              </motion.button>
-            );
-          })}
+                  <Icon size={20} />
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    whileHover={{ opacity: 1, x: 0 }}
+                    className={`absolute left-14 top-1/2 transform -translate-y-1/2 px-3 py-1 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} rounded-lg text-sm whitespace-nowrap shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300`}
+                  >
+                    {item.label}
+                  </motion.div>
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="absolute bottom-6 flex flex-col space-y-4">
-          {[
-            { icon: Github, href: 'https://github.com/HithxDevs' },
-            { icon: Linkedin, href: 'https://linkedin.com/in/harshith-daraboina' },
-            { icon: Mail, href: 'mailto:hithx.devs@gmail.com' }
-          ].map((social, index) => {
-            const Icon = social.icon;
-            return (
-              <motion.a
-                key={index}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.2, y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                className={`p-2 rounded-full ${theme.card} ${theme.textSecondary} hover:${theme.accent} hover:${theme.accentText} transition-all duration-300`}
-              >
-                <Icon size={16} />
-              </motion.a>
-            );
-          })}
+        <div className="flex flex-col items-center space-y-6">
+          {/* Theme Toggle */}
+          <motion.button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            whileHover={{ scale: 1.1, rotate: 180 }}
+            whileTap={{ scale: 0.9 }}
+            className={`p-3 rounded-xl ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} transition-colors`}
+            aria-label="Toggle theme"
+          >
+            {isDarkMode ? '☀️' : '🌙'}
+          </motion.button>
+
+          {/* Social Links */}
+          <div className="flex flex-col space-y-4">
+            {[
+              { icon: Github, href: 'https://github.com/HithxDevs' },
+              { icon: Linkedin, href: 'https://linkedin.com/in/harshith-daraboina' },
+              { icon: Mail, href: 'mailto:hithx.devs@gmail.com' }
+            ].map((social, index) => {
+              const Icon = social.icon;
+              return (
+                <motion.a
+                  key={index}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, y: -2 }}
+                  whileTap={{ scale: 0.9 }}
+                  className={`p-2 rounded-xl ${isDarkMode ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-200 text-black hover:bg-gray-300'} transition-all duration-300`}
+                >
+                  <Icon size={16} />
+                </motion.a>
+              );
+            })}
+          </div>
+
+          {/* Resume Download */}
+          <motion.a
+            href="https://drive.google.com/file/d/1v7NILE8qWdu5BGPdD_6h7TrDVyM2erWN/view" 
+            target="_blank"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`p-3 rounded-xl ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'} flex items-center justify-center`}
+          >
+            <FileText size={16} />
+          </motion.a>
         </div>
       </motion.nav>
 
       {/* Main Content */}
-      <div className="md:ml-20 pt-16 md:pt-0 relative z-10">
+      <div className="md:ml-24 pt-16 md:pt-0 relative z-10">
         {/* Hero Section */}
         <section id="home" className="relative z-10 pt-20 pb-40">
           <div className="max-w-6xl mx-auto px-8">
@@ -756,7 +810,7 @@ const CreativePortfolio = () => {
         </section>
 
         {/* Projects Section */}
-     <section className="relative min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-white overflow-hidden">
+<section className="relative min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-white overflow-hidden">
   {/* Sophisticated Grid Background */}
   <div className="absolute inset-0">
     {/* Primary grid */}
@@ -1089,6 +1143,49 @@ func (c *ConsensusEngine) ProposeBlock(block *Block) error {
   `}</style>
 </section>
 
+        {/* Skills Section */}
+        {/* <section className="py-16 sm:py-20 px-4 sm:px-8">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12 sm:mb-16"
+            >
+              <h2 className={`text-3xl sm:text-4xl font-bold ${theme.text} mb-4`}>Skills</h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-gray-700 to-black mx-auto"></div>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {skills.map((skill, index) => (
+                <motion.div
+                  key={skill.name}
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="space-y-4"
+                >
+                  <div className="flex justify-between items-center">
+                    <h3 className={`font-medium ${theme.text}`}>{skill.name}</h3>
+                    <span className={`text-sm ${theme.textSecondary}`}>{skill.level}%</span>
+                  </div>
+                  <div className={`h-2 rounded-full ${isDarkMode ? 'bg-gray-800' : 'bg-gray-200'}`}>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${skill.level}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1, delay: index * 0.1 }}
+                      className="h-full rounded-full bg-gradient-to-r from-gray-700 to-black"
+                    />
+                  </div>
+                  <p className={`text-sm ${theme.textSecondary}`}>{skill.category}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section> */}
+
         {/* Contact Section */}
         <section id="contact" className="py-16 sm:py-20 px-4 sm:px-8">
           <div className="max-w-6xl mx-auto">
@@ -1194,6 +1291,7 @@ func (c *ConsensusEngine) ProposeBlock(block *Block) error {
                       <input 
                         type="text" 
                         id="name" 
+                        name="name"
                         required
                         className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-gray-500`}
                         placeholder="Your name"
@@ -1204,6 +1302,7 @@ func (c *ConsensusEngine) ProposeBlock(block *Block) error {
                       <input 
                         type="email" 
                         id="email" 
+                        name="email"
                         required
                         className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-gray-500`}
                         placeholder="Your email"
@@ -1216,6 +1315,7 @@ func (c *ConsensusEngine) ProposeBlock(block *Block) error {
                     <input 
                       type="text" 
                       id="subject" 
+                      name="subject"
                       required
                       className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-gray-500`}
                       placeholder="Subject"
@@ -1226,6 +1326,7 @@ func (c *ConsensusEngine) ProposeBlock(block *Block) error {
                     <label htmlFor="message" className={`block ${theme.text} mb-2`}>Message</label>
                     <textarea 
                       id="message" 
+                      name="message"
                       rows={5}
                       required
                       className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-gray-500`}
@@ -1233,13 +1334,27 @@ func (c *ConsensusEngine) ProposeBlock(block *Block) error {
                     ></textarea>
                   </div>
                   
+                  {submitMessage.text && (
+                    <div className={`p-3 rounded-lg ${submitMessage.type === 'success' ? 'bg-green-900/20 text-green-400' : 'bg-red-900/20 text-red-400'}`}>
+                      {submitMessage.text}
+                    </div>
+                  )}
+                  
                   <motion.button
                     type="submit"
+                    disabled={isSubmitting}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`w-full px-6 py-4 ${theme.accent} ${theme.accentText} rounded-lg font-medium hover:shadow-lg transition-all duration-300`}
+                    className={`w-full px-6 py-4 ${theme.accent} ${theme.accentText} rounded-lg font-medium hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50`}
                   >
-                    Send Message
+                    {isSubmitting ? (
+                      <>Sending...</>
+                    ) : (
+                      <>
+                        <Send size={18} />
+                        Send Message
+                      </>
+                    )}
                   </motion.button>
                 </form>
               </motion.div>
@@ -1291,4 +1406,4 @@ func (c *ConsensusEngine) ProposeBlock(block *Block) error {
   );
 };
 
-export default CreativePortfolio;
+export default ProfessionalPortfolio;
