@@ -90,7 +90,7 @@ const CreativePortfolio = () => {
     }
   }, []);
 
-  // Three.js Earth-Focused Solar System
+  // Three.js Earth-Focused Solar System - Updated for black and white theme
   useEffect(() => {
     if (!mounted || !containerRef.current || typeof window === 'undefined') return;
 
@@ -103,7 +103,7 @@ const CreativePortfolio = () => {
     
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(isDarkMode ? 0x111111 : 0xf0f0f0, 0.7);
+    renderer.setClearColor(isDarkMode ? 0x000000 : 0xffffff, 0.7);
     containerRef.current.appendChild(renderer.domElement);
     
     // Create minimalist stars background
@@ -125,7 +125,7 @@ const CreativePortfolio = () => {
     starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
     
     const starMaterial = new THREE.PointsMaterial({
-      color: isDarkMode ? 0xffffff : 0x1a1a1a,
+      color: isDarkMode ? 0xffffff : 0x000000,
       size: 0.8,
       sizeAttenuation: true,
       transparent: true,
@@ -138,7 +138,7 @@ const CreativePortfolio = () => {
     // Create geometric sun
     const sunGeometry = new THREE.SphereGeometry(6, 32, 32);
     const sunMaterial = new THREE.MeshBasicMaterial({
-      color: isDarkMode ? 0xffffff : 0x1a1a1a,
+      color: isDarkMode ? 0xffffff : 0x000000,
       transparent: true,
       opacity: 0.8
     });
@@ -154,7 +154,7 @@ const CreativePortfolio = () => {
     // Create minimalist earth with geometric design
     const earthGeometry = new THREE.SphereGeometry(2.5, 32, 32);
     const earthMaterial = new THREE.MeshLambertMaterial({
-      color: isDarkMode ? 0xffffff : 0x1a1a1a,
+      color: isDarkMode ? 0xffffff : 0x000000,
       transparent: true,
       opacity: 0.9
     });
@@ -166,7 +166,7 @@ const CreativePortfolio = () => {
     const earthWireframe = new THREE.Mesh(
       earthGeometry,
       new THREE.MeshBasicMaterial({
-        color: isDarkMode ? 0xcccccc : 0x666666,
+        color: isDarkMode ? 0xcccccc : 0x333333,
         wireframe: true,
         transparent: true,
         opacity: 0.2
@@ -177,7 +177,7 @@ const CreativePortfolio = () => {
     // Create geometric moon
     const moonGeometry = new THREE.SphereGeometry(0.4, 16, 16);
     const moonMaterial = new THREE.MeshLambertMaterial({
-      color: isDarkMode ? 0xdddddd : 0x999999,
+      color: isDarkMode ? 0xdddddd : 0x222222,
       transparent: true,
       opacity: 0.8
     });
@@ -188,7 +188,7 @@ const CreativePortfolio = () => {
     // Create elegant moon orbit ring
     const moonOrbitGeometry = new THREE.RingGeometry(5.8, 6.2, 64);
     const moonOrbitMaterial = new THREE.MeshBasicMaterial({
-      color: isDarkMode ? 0xffffff : 0x1a1a1a,
+      color: isDarkMode ? 0xffffff : 0x000000,
       transparent: true,
       opacity: 0.1,
       side: THREE.DoubleSide
@@ -201,7 +201,7 @@ const CreativePortfolio = () => {
     const ambientLight = new THREE.AmbientLight(isDarkMode ? 0x404040 : 0x808080, 0.6);
     scene.add(ambientLight);
     
-    const directionalLight = new THREE.DirectionalLight(isDarkMode ? 0xffffff : 0x555555, 0.8);
+    const directionalLight = new THREE.DirectionalLight(isDarkMode ? 0xffffff : 0x222222, 0.8);
     directionalLight.position.set(50, 50, 50);
     scene.add(directionalLight);
     
@@ -381,20 +381,25 @@ const CreativePortfolio = () => {
     }
   };
 
+  // Updated theme for black and white professional coding style
   const theme = isDarkMode ? {
-    bg: 'bg-gray-900',
+    bg: 'bg-black',
     text: 'text-white',
-    textSecondary: 'text-gray-300',
-    card: 'bg-gray-800',
-    border: 'border-gray-700',
-    accent: 'bg-gradient-to-r from-cyan-500 to-blue-500'
+    textSecondary: 'text-gray-400',
+    card: 'bg-gray-900',
+    border: 'border-gray-800',
+    accent: 'bg-white text-black',
+    accentText: 'text-white',
+    accentBorder: 'border-white'
   } : {
     bg: 'bg-white',
-    text: 'text-gray-900',
+    text: 'text-black',
     textSecondary: 'text-gray-600',
     card: 'bg-gray-50',
     border: 'border-gray-200',
-    accent: 'bg-gradient-to-r from-blue-600 to-purple-600'
+    accent: 'bg-black text-white',
+    accentText: 'text-black',
+    accentBorder: 'border-black'
   };
 
   // Handle form submission
@@ -427,7 +432,7 @@ const CreativePortfolio = () => {
             onClick={() => setIsDarkMode(!isDarkMode)}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className={`p-2 rounded-full ${theme.accent} text-white`}
+            className={`p-2 rounded-full ${theme.accent}`}
             aria-label="Toggle theme"
           >
             {isDarkMode ? '☀️' : '🌙'}
@@ -464,7 +469,7 @@ const CreativePortfolio = () => {
                       onClick={() => scrollToSection(item.id)}
                       className={`flex items-center px-4 py-3 rounded-lg transition-all ${
                         activeSection === item.id 
-                          ? `${theme.accent} text-white` 
+                          ? `${theme.accent} ${theme.accentText}` 
                           : `${theme.text} hover:${theme.card}`
                       }`}
                     >
@@ -490,7 +495,7 @@ const CreativePortfolio = () => {
           onClick={() => setIsDarkMode(!isDarkMode)}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className={`absolute top-6 p-3 rounded-full ${theme.accent} text-white`}
+          className={`absolute top-6 p-3 rounded-full ${theme.accent}`}
           aria-label="Toggle theme"
         >
           {isDarkMode ? '☀️' : '🌙'}
@@ -510,8 +515,8 @@ const CreativePortfolio = () => {
                 whileTap={{ scale: 0.9 }}
                 className={`relative p-3 rounded-full transition-all duration-300 group ${
                   activeSection === item.id 
-                    ? `${theme.accent} text-white shadow-lg` 
-                    : `${theme.card} ${theme.text} hover:${theme.accent} hover:text-white`
+                    ? `${theme.accent} ${theme.accentText} shadow-lg` 
+                    : `${theme.card} ${theme.text} hover:${theme.accent} hover:${theme.accentText}`
                 }`}
               >
                 <Icon size={20} />
@@ -542,7 +547,7 @@ const CreativePortfolio = () => {
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.2, y: -2 }}
                 whileTap={{ scale: 0.9 }}
-                className={`p-2 rounded-full ${theme.card} ${theme.textSecondary} hover:${theme.accent} hover:text-white transition-all duration-300`}
+                className={`p-2 rounded-full ${theme.card} ${theme.textSecondary} hover:${theme.accent} hover:${theme.accentText} transition-all duration-300`}
               >
                 <Icon size={16} />
               </motion.a>
@@ -558,7 +563,7 @@ const CreativePortfolio = () => {
           <div className="max-w-6xl mx-auto px-8">
             <div className="mb-32">
               <div className="mb-8">
-                <p className={`text-sm tracking-widest ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-4`}>I BELIEVE THAT WHAT YOU WANT TO BECOME IN THE LIFE, IS WHAT ALL YOU NEED. </p>
+                <p className={`text-sm tracking-widest ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>I BELIEVE THAT WHAT YOU WANT TO BECOME IN THE LIFE, IS WHAT ALL YOU NEED. </p>
                 <h1 className={`text-6xl md:text-8xl font-light leading-tight ${theme.text} mb-8`}>
                   HARSHITH<br />
                   <span className="text-4xl md:text-6xl">DARABOINA</span>
@@ -588,78 +593,115 @@ const CreativePortfolio = () => {
         </section>
 
         {/* About Section */}
-        <section id="about" className={`py-16 sm:py-20 px-4 sm:px-8 ${theme.card}`}>
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12 sm:mb-16"
-            >
-              <h2 className={`text-3xl sm:text-4xl font-bold ${theme.text} mb-4`}>About Me</h2>
-              <div className="w-20 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 mx-auto"></div>
-            </motion.div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <section className={`py-20 px-4 sm:px-8 ${theme.bg}`}>
+          <div className="max-w-7xl mx-auto">
+            {/* Main Content - Split Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
+              {/* Image Side */}
               <motion.div
-                initial={{ opacity: 0, x: -50 }}
+                initial={{ opacity: 0, x: -60 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="order-2 lg:order-1"
+                transition={{ duration: 0.8 }}
+                className="relative"
               >
+                {/* Glowing background effect */}
+                <div className="absolute -inset-6 bg-gradient-to-r from-gray-400/10 to-gray-600/10 rounded-3xl blur-3xl"></div>
+                
+                {/* Image container */}
                 <div className="relative">
-                  <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl opacity-20 blur-lg"></div>
-                  <div className="relative w-full h-96 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center">
+                  <div className="overflow-hidden rounded-2xl shadow-2xl border border-white/10">
                     <img 
-                    src='/assets/hero.png'  
-                    alt="Harshith Daraboina" 
-                    className="relative rounded-2xl w-full h-auto max-w-lg mx-auto border-4 border-white/10 shadow-xl"
-                  />
+                      src='/assets/hero.png'  
+                      alt="Harshith Daraboina" 
+                      className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
+                    />
                   </div>
                 </div>
               </motion.div>
 
+              {/* Content Side */}
               <motion.div
-                initial={{ opacity: 0, x: 50 }}
+                initial={{ opacity: 0, x: 60 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="space-y-6 order-1 lg:order-2"
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="space-y-8"
               >
-                <h3 className={`text-2xl font-bold ${theme.text}`}>
-                  Crafting Digital Excellence Through Code
-                </h3>
-                <p className={`${theme.textSecondary} leading-relaxed`}>
-                  As a passionate Computer Science student at IIIT Dharwad, I specialize in building robust full-stack applications and intelligent machine learning solutions. With a strong foundation in modern web technologies and AI algorithms, I create products that are both technically sound and user-centric.
-                </p>
-                <p className={`${theme.textSecondary} leading-relaxed`}>
-                  My approach combines analytical problem-solving with creative design thinking, resulting in solutions that are not just functional but also delightful to use. I&apos;m particularly interested in the intersection of AI and web technologies, where I can leverage both domains to build truly innovative products.
-                </p>
+                {/* Main Heading with Outline Effect */}
+                <div className="space-y-4">
+                  <h2 className="text-lg font-medium text-gray-400 mb-2">
+                    We craft digital experiences and see the world through a
+                  </h2>
+                  <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight">
+                    <span className={`${theme.text} block`}>lens of innovation</span>
+                    <span 
+                      className="block text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-600"
+                      style={{
+                        WebkitTextStroke: isDarkMode ? '2px rgba(255,255,255,0.3)' : '2px rgba(0,0,0,0.3)',
+                        textShadow: '0 0 30px rgba(100, 100, 100, 0.3)'
+                      }}
+                    >
+                      and excellence
+                    </span>
+                  </h1>
+                </div>
 
-                <div className="pt-6">
-                  <h4 className={`text-lg font-semibold ${theme.text} mb-6`}>Core Competencies</h4>
-                  <div className="space-y-6">
-                    {skills.map((skill, index) => (
-                      <div key={skill.name}>
-                        <div className="flex justify-between mb-2">
-                          <span className={`font-medium ${theme.text}`}>{skill.name}</span>
-                          <span className={`${theme.textSecondary}`}>{skill.level}%</span>
-                        </div>
-                        <div className={`w-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-2.5`}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${skill.level}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 1, delay: index * 0.1 }}
-                            className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2.5 rounded-full"
-                          />
-                        </div>
-                        <div className={`text-xs ${theme.textSecondary} mt-1`}>
-                          {skill.category}
-                        </div>
-                      </div>
+                {/* Description */}
+                <div className="space-y-6">
+                  <p className={`text-lg ${theme.textSecondary} leading-relaxed max-w-xl`}>
+                    As a passionate Computer Science student at IIIT Dharwad, I specialize in building robust full-stack applications and intelligent machine learning solutions.
+                  </p>
+                  
+                  <p className={`text-lg ${theme.textSecondary} leading-relaxed max-w-xl`}>
+                    My approach combines analytical problem-solving with creative design thinking, resulting in solutions that are not just functional but also delightful to use.
+                  </p>
+                </div>
+
+                {/* CTA Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.8 }}
+                  className="pt-4"
+                >
+                  <button className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-gray-700 to-black text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-gray-500/25 transition-all duration-300 transform hover:scale-105">
+                    <span>Know more about me</span>
+                    <svg 
+                      className="w-5 h-5 group-hover:translate-x-1 transition-transform" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </button>
+                </motion.div>
+
+                {/* Skills Preview */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 1 }}
+                  className="pt-8"
+                >
+                  <div className="flex flex-wrap gap-3">
+                    {['React', 'Python', 'AI/ML', 'Node.js', 'Cloud'].map((skill, index) => (
+                      <motion.span
+                        key={skill}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: 1.2 + index * 0.1 }}
+                        className={`px-4 py-2 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} rounded-full text-sm font-medium ${theme.text} hover:border-gray-400 transition-colors`}
+                      >
+                        {skill}
+                      </motion.span>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
             </div>
           </div>
@@ -675,7 +717,7 @@ const CreativePortfolio = () => {
               className="text-center mb-12 sm:mb-16"
             >
               <h2 className={`text-3xl sm:text-4xl font-bold ${theme.text} mb-4`}>Experience</h2>
-              <div className="w-20 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 mx-auto"></div>
+              <div className="w-20 h-1 bg-gradient-to-r from-gray-700 to-black mx-auto"></div>
             </motion.div>
 
             <div className="space-y-8">
@@ -686,12 +728,12 @@ const CreativePortfolio = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className={`${theme.card} p-6 sm:p-8 rounded-xl border ${theme.border} hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300`}
+                  className={`${theme.card} p-6 sm:p-8 rounded-xl border ${theme.border} hover:shadow-lg hover:shadow-gray-500/10 transition-all duration-300`}
                 >
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 sm:mb-6">
                     <div>
                       <h3 className={`text-xl font-bold ${theme.text} mb-1 sm:mb-2`}>{exp.position}</h3>
-                      <h4 className="text-lg text-cyan-400 font-medium">{exp.company}</h4>
+                      <h4 className="text-lg text-gray-400 font-medium">{exp.company}</h4>
                     </div>
                     <div className={`${theme.textSecondary} font-medium mt-2 md:mt-0`}>{exp.period}</div>
                   </div>
@@ -701,7 +743,7 @@ const CreativePortfolio = () => {
                     {exp.achievements.map((achievement, idx) => (
                       <span 
                         key={idx} 
-                        className="px-3 py-1 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 rounded-full text-xs sm:text-sm font-medium border border-cyan-500/30"
+                        className="px-3 py-1 bg-gradient-to-r from-gray-700/20 to-black/20 text-gray-400 rounded-full text-xs sm:text-sm font-medium border border-gray-700/30"
                       >
                         {achievement}
                       </span>
@@ -714,84 +756,338 @@ const CreativePortfolio = () => {
         </section>
 
         {/* Projects Section */}
-        <section id="projects" className={`py-16 sm:py-20 px-4 sm:px-8 ${theme.card}`}>
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12 sm:mb-16"
-            >
-              <h2 className={`text-3xl sm:text-4xl font-bold ${theme.text} mb-4`}>Featured Projects</h2>
-              <div className="w-20 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 mx-auto"></div>
-            </motion.div>
+     <section className="relative min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-white overflow-hidden">
+  {/* Sophisticated Grid Background */}
+  <div className="absolute inset-0">
+    {/* Primary grid */}
+    <div className="absolute inset-0" style={{
+      backgroundImage: `linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), 
+                       linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)`,
+      backgroundSize: '50px 50px'
+    }}></div>
+    
+    {/* Accent grid */}
+    <div className="absolute inset-0" style={{
+      backgroundImage: `linear-gradient(rgba(0,0,0,0.08) 1px, transparent 1px), 
+                       linear-gradient(90deg, rgba(0,0,0,0.08) 1px, transparent 1px)`,
+      backgroundSize: '200px 200px'
+    }}></div>
+    
+    {/* Floating geometric elements */}
+    <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-br from-gray-200/30 to-gray-300/20 rounded-full blur-3xl"></div>
+    <div className="absolute bottom-20 right-20 w-80 h-80 bg-gradient-to-tl from-slate-200/40 to-gray-200/30 rounded-full blur-2xl"></div>
+    <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-gradient-to-r from-gray-100/50 to-slate-200/30 rounded-full blur-xl"></div>
+  </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {projects.map((project, index) => (
-                <motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ y: -10 }}
-                  className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl overflow-hidden border ${theme.border} hover:shadow-xl hover:shadow-cyan-500/20 transition-all duration-300 group`}
-                >
-                  <a href={project.link} target="_blank" rel="noopener noreferrer" className="block">
-                    <div className="h-48 bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center relative overflow-hidden">
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-br from-cyan-400/20 to-blue-600/20"
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.3 }}
-                      />
-                      <div className="text-white text-xl font-bold z-10 px-4 text-center">{project.title}</div>
-                      <ExternalLink className="absolute top-4 right-4 text-white/80 group-hover:text-white transition-colors" size={20} />
-                    </div>
-                  </a>
-                  
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className={`text-xl font-bold ${theme.text} group-hover:text-cyan-400 transition-colors`}>
-                        {project.title}
-                      </h3>
-                      <span className={`text-sm ${theme.textSecondary}`}>{project.year}</span>
-                    </div>
-                    
-                    <p className={`${theme.textSecondary} mb-4 leading-relaxed`}>{project.description}</p>
-                    
-                    {project.achievement && (
-                      <div className="mb-4">
-                        <span className="px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 rounded-full text-xs sm:text-sm font-medium border border-green-500/30">
-                          ✨ {project.achievement}
-                        </span>
-                      </div>
-                    )}
-                    
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.technologies.map(tech => (
-                        <span 
-                          key={tech} 
-                          className="px-3 py-1 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 rounded-full text-xs font-medium border border-cyan-500/30"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    <a 
-                      href={project.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center text-cyan-400 hover:text-cyan-300 transition-colors text-sm sm:text-base"
-                    >
-                      View Project <ExternalLink className="ml-1" size={16} />
-                    </a>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+  <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+    {/* Header Section */}
+    <motion.div
+      className="text-center mb-24"
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 1 }}
+    >
+      <div className="inline-block mb-8">
+        <motion.div
+          className="text-xs tracking-[0.3em] text-gray-600 uppercase mb-4"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+        >
+          Software Engineering Excellence
+        </motion.div>
+        <motion.h1
+          className="text-5xl md:text-7xl lg:text-8xl font-light text-gray-900 mb-6 tracking-tight"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 1 }}
+        >
+          DIGITAL
+          <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-700 to-gray-900 font-extralight italic">
+            ARCHITECTURE
+          </span>
+        </motion.h1>
+        <motion.div
+          className="w-32 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto"
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          transition={{ delay: 1, duration: 1.5 }}
+        ></motion.div>
+      </div>
+    </motion.div>
+
+    {/* Innovation Metrics */}
+    <motion.div
+      className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-32"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay: 0.8, duration: 1 }}
+    >
+      {[
+        { value: "500K+", metric: "Lines of Code", description: "Production-ready software" },
+        { value: "99.9%", metric: "Uptime", description: "Mission-critical systems" },
+        { value: "50ms", metric: "Response Time", description: "Optimized performance" },
+        { value: "Zero", metric: "Security Breaches", description: "Bulletproof architecture" }
+      ].map((item, index) => (
+        <motion.div
+          key={index}
+          className="text-center group cursor-pointer"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 1 + index * 0.2, duration: 0.8 }}
+          whileHover={{ y: -10 }}
+        >
+          <div className="relative">
+            <motion.div
+              className="text-4xl md:text-5xl font-extralight text-gray-900 mb-2"
+              whileHover={{ scale: 1.1 }}
+            >
+              {item.value}
+            </motion.div>
+            <div className="text-sm text-gray-700 font-medium mb-2">{item.metric}</div>
+            <div className="text-xs text-gray-500">{item.description}</div>
+            <motion.div
+              className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-12 h-px bg-gray-800 opacity-0 group-hover:opacity-100"
+              transition={{ duration: 0.3 }}
+            ></motion.div>
           </div>
-        </section>
+        </motion.div>
+      ))}
+    </motion.div>
+
+    {/* Project Showcase */}
+    <motion.div
+      className="mb-32"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 1 }}
+    >
+      <div className="text-center mb-16">
+        <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-4">Featured Solutions</h2>
+        <div className="w-16 h-px bg-gray-800 mx-auto"></div>
+      </div>
+
+      <div className="space-y-12">
+        {[
+          {
+            id: "01",
+            title: "Quantum Trading Engine",
+            category: "FinTech Infrastructure",
+            description: "High-frequency trading system processing 1M+ transactions per second with microsecond latency optimization.",
+            technologies: ["Rust", "WebAssembly", "gRPC", "Redis Cluster"],
+            metrics: { performance: "1M TPS", latency: "<50μs", accuracy: "99.99%" },
+            codePreview: `// Ultra-low latency order matching
+use tokio::time::Instant;
+async fn match_order(order: Order) -> Result<Trade> {
+    let start = Instant::now();
+    let result = engine.match_atomic(order).await?;
+    metrics.record_latency(start.elapsed());
+    Ok(result)
+}`
+          },
+          {
+            id: "02",
+            title: "Neural Vision Pipeline",
+            category: "AI/ML Platform",
+            description: "Real-time computer vision system with edge computing capabilities for autonomous vehicle navigation.",
+            technologies: ["TensorFlow", "CUDA", "OpenCV", "Kubernetes"],
+            metrics: { accuracy: "98.7%", processing: "60 FPS", efficiency: "90% GPU" },
+            codePreview: `# Multi-scale object detection
+class NeuralVision:
+    def __init__(self, model_path):
+        self.model = tf.saved_model.load(model_path)
+        self.preprocessor = VisionPreprocessor()
+    
+    @tf.function
+    def detect_objects(self, frame):
+        processed = self.preprocessor.normalize(frame)
+        return self.model(processed)`
+          },
+          {
+            id: "03",
+            title: "Distributed Ledger Core",
+            category: "Blockchain Technology",
+            description: "Enterprise-grade blockchain infrastructure with custom consensus algorithm and smart contract execution.",
+            technologies: ["Go", "IPFS", "PostgreSQL", "Docker Swarm"],
+            metrics: { throughput: "10K TPS", nodes: "1000+", consensus: "<2s" },
+            codePreview: `// Consensus algorithm implementation
+type ConsensusEngine struct {
+    validators []Validator
+    threshold  float64
+}
+
+func (c *ConsensusEngine) ProposeBlock(block *Block) error {
+    votes := c.collectVotes(block)
+    if votes.approval >= c.threshold {
+        return c.commitBlock(block)
+    }
+    return ErrConsensusNotReached
+}`
+          }
+        ].map((project, index) => (
+          <motion.div
+            key={project.id}
+            className="group relative"
+            initial={{ opacity: 0, x: index % 2 === 0 ? -100 : 100 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.3, duration: 1 }}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Project Info */}
+              <div className={`lg:col-span-5 ${index % 2 === 1 ? 'lg:order-2' : ''}`}>
+                <div className="space-y-6">
+                  <div>
+                    <div className="text-6xl font-extralight text-gray-300 mb-2">{project.id}</div>
+                    <div className="text-xs text-gray-600 uppercase tracking-wider mb-3">{project.category}</div>
+                    <h3 className="text-2xl md:text-3xl font-light text-gray-900 mb-4">{project.title}</h3>
+                    <p className="text-gray-600 leading-relaxed mb-6">{project.description}</p>
+                  </div>
+
+                  {/* Metrics */}
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    {Object.entries(project.metrics).map(([key, value]) => (
+                      <div key={key} className="text-center">
+                        <div className="text-lg font-light text-gray-900">{value}</div>
+                        <div className="text-xs text-gray-600 uppercase">{key}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Technologies */}
+                  <div className="flex flex-wrap gap-3">
+                    {project.technologies.map(tech => (
+                      <span key={tech} className="px-3 py-1 border border-gray-400 text-gray-700 text-xs font-medium rounded-full hover:border-gray-600 hover:bg-gray-50 transition-colors">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Code Preview */}
+              <div className={`lg:col-span-7 ${index % 2 === 1 ? 'lg:order-1' : ''}`}>
+                <motion.div
+                  className="relative bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 group-hover:border-gray-300 hover:shadow-xl transition-all duration-500"
+                  whileHover={{ scale: 1.02 }}
+                >
+                  {/* Terminal Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex space-x-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <div className="text-xs text-gray-600 font-mono">production.rs</div>
+                  </div>
+
+                  {/* Code */}
+                  <div className="font-mono text-sm">
+                    <pre className="text-gray-800 leading-relaxed overflow-x-auto">
+                      <code>{project.codePreview}</code>
+                    </pre>
+                  </div>
+
+                  {/* Glow Effect */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Project Divider */}
+            {index < 2 && (
+              <motion.div
+                className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mt-24"
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5, duration: 1 }}
+              ></motion.div>
+            )}
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+
+    {/* Technologies Stack */}
+    <motion.div
+      className="mb-32"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 1 }}
+    >
+      <div className="text-center mb-16">
+        <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-4">Technology Expertise</h2>
+        <div className="w-16 h-px bg-gray-800 mx-auto"></div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
+        {[
+          "TypeScript", "Rust", "Go", "Python", "React", "Next.js",
+          "Node.js", "PostgreSQL", "Redis", "Kubernetes", "AWS", "Docker",
+          "TensorFlow", "WebAssembly", "GraphQL", "gRPC", "Blockchain", "WebGL"
+        ].map((tech, index) => (
+          <motion.div
+            key={tech}
+            className="group text-center cursor-pointer"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.05, duration: 0.6 }}
+            whileHover={{ y: -5 }}
+          >
+            <div className="w-16 h-16 mx-auto mb-3 bg-white/70 border border-gray-200 rounded-2xl flex items-center justify-center group-hover:border-gray-400 hover:shadow-lg transition-all">
+              <div className="text-2xl text-gray-600 group-hover:text-gray-900 transition-colors">
+                {tech.charAt(0)}
+              </div>
+            </div>
+            <div className="text-xs text-gray-600 group-hover:text-gray-800 transition-colors font-medium">
+              {tech}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+
+    {/* CTA Section */}
+    <motion.div
+      className="text-center"
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 1 }}
+    >
+      <motion.button
+        className="group relative inline-flex items-center justify-center px-12 py-4 text-sm font-medium text-black bg-white rounded-full hover:bg-gray-100 transition-all duration-300 overflow-hidden"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <span className="relative z-10 tracking-wider uppercase">Explore Architecture</span>
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-gray-100 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        />
+      </motion.button>
+      
+      <p className="text-gray-600 text-sm mt-8 max-w-md mx-auto">
+        Building tomorrow's software infrastructure today. Every line of code crafted with precision and purpose.
+      </p>
+    </motion.div>
+  </div>
+
+  <style jsx>{`
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(-20px, -20px) rotate(1deg); }
+      66% { transform: translate(20px, -10px) rotate(-1deg); }
+    }
+  `}</style>
+</section>
 
         {/* Contact Section */}
         <section id="contact" className="py-16 sm:py-20 px-4 sm:px-8">
@@ -803,7 +1099,7 @@ const CreativePortfolio = () => {
               className="text-center mb-12 sm:mb-16"
             >
               <h2 className={`text-3xl sm:text-4xl font-bold ${theme.text} mb-4`}>Get In Touch</h2>
-              <div className="w-20 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 mx-auto"></div>
+              <div className="w-20 h-1 bg-gradient-to-r from-gray-700 to-black mx-auto"></div>
               <p className={`max-w-2xl mx-auto ${theme.textSecondary} mt-6`}>
                 Have a project in mind or want to discuss opportunities? Feel free to reach out!
               </p>
@@ -821,31 +1117,31 @@ const CreativePortfolio = () => {
                   
                   <div className="space-y-6">
                     <div className="flex items-start gap-4">
-                      <div className={`p-3 rounded-full ${theme.accent} text-white`}>
+                      <div className={`p-3 rounded-full ${theme.accent}`}>
                         <Mail size={20} />
                       </div>
                       <div>
                         <h4 className={`font-medium ${theme.text}`}>Email</h4>
-                        <a href="mailto:hithx.devs@gmail.com" className={`${theme.textSecondary} hover:text-cyan-400 transition-colors`}>
+                        <a href="mailto:hithx.devs@gmail.com" className={`${theme.textSecondary} hover:text-gray-400 transition-colors`}>
                           hithx.devs@gmail.com
                         </a>
                       </div>
                     </div>
                     
                     <div className="flex items-start gap-4">
-                      <div className={`p-3 rounded-full ${theme.accent} text-white`}>
+                      <div className={`p-3 rounded-full ${theme.accent}`}>
                         <Phone size={20} />
                       </div>
                       <div>
                         <h4 className={`font-medium ${theme.text}`}>Phone</h4>
-                        <a href="tel:+918639066100" className={`${theme.textSecondary} hover:text-cyan-400 transition-colors`}>
+                        <a href="tel:+918639066100" className={`${theme.textSecondary} hover:text-gray-400 transition-colors`}>
                           +91 8639066100
                         </a>
                       </div>
                     </div>
                     
                     <div className="flex items-start gap-4">
-                      <div className={`p-3 rounded-full ${theme.accent} text-white`}>
+                      <div className={`p-3 rounded-full ${theme.accent}`}>
                         <MapPin size={20} />
                       </div>
                       <div>
@@ -872,7 +1168,7 @@ const CreativePortfolio = () => {
                             rel="noopener noreferrer"
                             whileHover={{ scale: 1.1, y: -2 }}
                             whileTap={{ scale: 0.9 }}
-                            className={`p-3 rounded-full ${theme.card} ${theme.text} hover:${theme.accent} hover:text-white transition-all duration-300`}
+                            className={`p-3 rounded-full ${theme.card} ${theme.text} hover:${theme.accent} hover:${theme.accentText} transition-all duration-300`}
                           >
                             <Icon size={20} />
                           </motion.a>
@@ -899,7 +1195,7 @@ const CreativePortfolio = () => {
                         type="text" 
                         id="name" 
                         required
-                        className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                        className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-gray-500`}
                         placeholder="Your name"
                       />
                     </div>
@@ -909,7 +1205,7 @@ const CreativePortfolio = () => {
                         type="email" 
                         id="email" 
                         required
-                        className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                        className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-gray-500`}
                         placeholder="Your email"
                       />
                     </div>
@@ -921,7 +1217,7 @@ const CreativePortfolio = () => {
                       type="text" 
                       id="subject" 
                       required
-                      className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                      className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-gray-500`}
                       placeholder="Subject"
                     />
                   </div>
@@ -932,7 +1228,7 @@ const CreativePortfolio = () => {
                       id="message" 
                       rows={5}
                       required
-                      className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                      className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} border ${theme.border} ${theme.text} focus:outline-none focus:ring-2 focus:ring-gray-500`}
                       placeholder="Your message"
                     ></textarea>
                   </div>
@@ -941,7 +1237,7 @@ const CreativePortfolio = () => {
                     type="submit"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`w-full px-6 py-4 ${theme.accent} text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300`}
+                    className={`w-full px-6 py-4 ${theme.accent} ${theme.accentText} rounded-lg font-medium hover:shadow-lg transition-all duration-300`}
                   >
                     Send Message
                   </motion.button>
@@ -972,7 +1268,7 @@ const CreativePortfolio = () => {
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.2, y: -2 }}
                     whileTap={{ scale: 0.9 }}
-                    className={`${theme.textSecondary} hover:text-cyan-400 transition-colors`}
+                    className={`${theme.textSecondary} hover:text-gray-400 transition-colors`}
                   >
                     <Icon size={20} />
                   </motion.a>
